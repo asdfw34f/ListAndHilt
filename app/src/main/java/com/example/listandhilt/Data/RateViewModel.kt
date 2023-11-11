@@ -1,8 +1,5 @@
 package com.example.listandhilt.Data
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.example.listandhilt.Data.Helpers.RateAdder
 import com.example.listandhilt.Data.Helpers.RateEditor
@@ -13,101 +10,127 @@ import com.example.listandhilt.Data.Helpers.RatesSorter
 import com.example.listandhilt.Data.Types.BroadCast
 import com.example.listandhilt.Data.Types.TypeEdit
 import com.example.listandhilt.Data.Types.TypeSearch
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import javax.inject.Inject
 
-class RateViewModel constructor(
-    private var editor: RateEditor = RateEditor(),
-    private var adder: RateAdder = RateAdder(),
-    private var remover: RateRemover = RateRemover(),
-    private var sorter: RatesSorter = RatesSorter(),
-    private var searcher: RateSearcher = RateSearcher(),
-    private var printer: RatesPrinter = RatesPrinter(),
-    private val coroutineScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
-): ViewModel()  {
+@HiltViewModel
+class RateViewModel @Inject constructor(
+): ViewModel() {
 
 
-    fun print(rates: Rates):String {
-        return printer.printRates(rates)
+    val rates: MutableStateFlow<Rates> = MutableStateFlow(
+        Rates(
+            mutableListOf(
+                Rate(
+                    "MTS RUS",
+                    BroadCast.HD,
+                    false
+                ),
+                Rate(
+                    "BEELINE",
+                    BroadCast.HD,
+                    true
+                )
+            )
+        )
+    )
+
+    @Inject
+    lateinit var editor: RateEditor
+
+    @Inject
+    lateinit var adder: RateAdder
+
+    @Inject
+    lateinit var remover: RateRemover
+
+    @Inject
+    lateinit var sorter: RatesSorter
+
+    @Inject
+    lateinit var searcher: RateSearcher
+
+    @Inject
+    lateinit var printer: RatesPrinter
+
+    fun print(): String {
+        return printer.printRates(rates.asStateFlow())
     }
-     fun search(rates: Rates, search: TypeSearch, name:String, index: Int, type: BroadCast, access: Boolean): Rates {
 
+    fun search(search: TypeSearch, name: String, index: Int, type: BroadCast, access: Boolean) {
+        when (search) {
+            TypeSearch.Name -> {
+                if (name.isNotBlank() && name != "")
+                    searcher.searchRateName(rates, name)
+            }
 
-         return when (search) {
-             TypeSearch.Name -> {
-                 if (name.isNotBlank() && name != "")
-                     searcher.searchRateName(rates, name)
-                 else null
-             }
+            TypeSearch.Access -> {
+                searcher.searchRateAccess(rates, access)
+            }
 
-             TypeSearch.Access -> {
-                 searcher.searchRateAccess(rates, access)
-             }
+            TypeSearch.BroadCast -> {
+                searcher.searchRateBradCast(rates, type)
+            }
 
-             TypeSearch.BroadCast -> {
-                 searcher.searchRateBradCast(rates, type)
-             }
+            TypeSearch.Index -> {
 
-             TypeSearch.Index -> {
+                searcher.searchRateIndex(rates, index)
+            }
+        }  // println("Rate wasn't fund")
 
-                 searcher.searchRateIndex(rates, index)
-             }
-         } ?: // println("Rate wasn't fund")
-         rates
-     }
-     fun sort(rates: Rates, sort: TypeEdit): Rates {
-        val res = when (sort){
+    }
+
+    fun sort(sort: TypeEdit) {
+        when (sort) {
             TypeEdit.Name -> {
                 sorter.sortRateName(rates)
             }
+
             TypeEdit.Access -> {
                 sorter.sortRateAccess(rates)
             }
+
             TypeEdit.BroadCast -> {
                 sorter.sortRateBroadCast(rates)
+            }
+        }
+    }
+
+    fun edit(
+        index: Int,
+        edit: TypeEdit,
+        newName: String,
+        newBroadCast: BroadCast,
+        newAccess: Boolean
+    ) {
+        when (edit) {
+            TypeEdit.BroadCast -> {
+                editor.editRateType(rates, index, newBroadCast)
+            }
+
+            TypeEdit.Access -> {
+                editor.editRateAccess(rates, index, newAccess)
+            }
+
+            TypeEdit.Name -> {
+                if (newName != "" && newName.isNotBlank())
+                    editor.editRateName(rates, index, newName)
 
             }
         }
-        return res
     }
-     fun edit(rates: Rates, index:Int, edit: TypeEdit, newName:String, newBroadCast: BroadCast, newAccess:Boolean): Rates {
-         return when (edit) {
-             TypeEdit.BroadCast -> {
-                 editor.editRateType(rates, index, newBroadCast)
-             }
 
-             TypeEdit.Access -> {
-                 editor.editRateAccess(rates, index, newAccess)
-             }
-
-             TypeEdit.Name -> {
-                 if (newName != "" && newName.isNotBlank())
-                     editor.editRateName(rates, index, newName)
-                 else null
-             }
-         } ?: //        println("Rate wasn't edit")
-         rates
-     }
-     fun add(rates: Rates, name:String, type: BroadCast, access:Boolean): Rates {
+    fun add(name: String, type: BroadCast, access: Boolean) {
         if (name != "" && name.isNotBlank()) {
-            return adder.addRate(rates, Rate(name, type, access))
+            adder.addRate(rates, Rate(name, type, access))
         }
-    //    println("Rate wasn't add")
-        return rates
-
     }
-     fun remove(rates: Rates, name: String): Rates {
+
+    fun remove(name: String) {
         if (name != "" && name.isNotBlank()) {
-            return remover.removeRate(rates, name)
+            remover.removeRate(rates, name)
         }
-   //     println("Rate wasn't remove")
-        return rates
     }
-
-    override fun onCleared() {
-        coroutineScope.cancel()
-    }
-
 }

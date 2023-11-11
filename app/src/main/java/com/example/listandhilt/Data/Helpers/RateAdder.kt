@@ -2,10 +2,11 @@ package com.example.listandhilt.Data.Helpers
 
 import com.example.listandhilt.Data.Rate
 import com.example.listandhilt.Data.Rates
+import kotlinx.coroutines.flow.StateFlow
+import javax.inject.Inject
 
-class RateAdder {
-    fun addRate(rates: Rates, rate: Rate): Rates {
-        rates.rates.add(rate)
-        return rates
+class RateAdder @Inject constructor() {
+    fun addRate(rates: StateFlow<Rates>, rate: Rate) {
+        rates.value.rates.add(rate)
     }
 }

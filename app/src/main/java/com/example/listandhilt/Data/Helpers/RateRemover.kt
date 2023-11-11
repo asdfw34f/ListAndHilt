@@ -1,10 +1,11 @@
 package com.example.listandhilt.Data.Helpers
 
 import com.example.listandhilt.Data.Rates
+import kotlinx.coroutines.flow.StateFlow
+import javax.inject.Inject
 
-class RateRemover {
-    fun removeRate(rates: Rates, name:String): Rates {
-        rates.rates.removeIf { it.name == name }
-        return rates
+class RateRemover @Inject constructor(){
+    fun removeRate(rates: StateFlow<Rates>, name:String) {
+        rates.value.rates.removeIf { it.name == name }
     }
 }
