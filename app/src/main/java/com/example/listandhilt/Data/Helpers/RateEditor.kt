@@ -2,30 +2,29 @@ package com.example.listandhilt.Data.Helpers
 
 import com.example.listandhilt.Data.Rates
 import com.example.listandhilt.Data.Types.BroadCast
-import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject
 
 class RateEditor @Inject constructor(){
-    fun editRateName(rates:  StateFlow<Rates>, i: Int, name: String) {
+    fun editRateName(rates: Rates, i: Int, name: String) {
          try {
-            rates.value.rates[i].name = name
+             rates.rates.value[i].name = name
 
         } catch (_: IndexOutOfBoundsException) {
 
         }
     }
 
-    fun editRateType(rates: StateFlow<Rates>, i: Int, newType: BroadCast) {
+    fun editRateType(rates: Rates, i: Int, newType: BroadCast) {
         try {
-            rates.value.rates[i].type = newType
+            rates.rates.value[i].type = newType
         } catch (_: IndexOutOfBoundsException) {
 
         }
     }
 
-    fun editRateAccess(rates:  StateFlow<Rates>, i: Int, newAccess: Boolean) {
+    fun editRateAccess(rates: Rates, i: Int, newAccess: Boolean) {
          try {
-            rates.value.rates[i].access = newAccess
+             rates.rates.value[i].access = newAccess
 
         } catch (_: IndexOutOfBoundsException) {
 

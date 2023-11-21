@@ -1,27 +1,59 @@
 package com.example.listandhilt.Data
 
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.compose.SavedStateHandleSaveableApi
+import androidx.lifecycle.viewmodel.compose.saveable
 import com.example.listandhilt.Data.Helpers.RateAdder
 import com.example.listandhilt.Data.Helpers.RateEditor
 import com.example.listandhilt.Data.Helpers.RateRemover
 import com.example.listandhilt.Data.Helpers.RateSearcher
-import com.example.listandhilt.Data.Helpers.RatesPrinter
 import com.example.listandhilt.Data.Helpers.RatesSorter
 import com.example.listandhilt.Data.Types.BroadCast
 import com.example.listandhilt.Data.Types.TypeEdit
 import com.example.listandhilt.Data.Types.TypeSearch
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import javax.inject.Inject
 
 @HiltViewModel
-class RateViewModel @Inject constructor(
-): ViewModel() {
+class RateViewModel @Inject constructor(savedStateHandle: SavedStateHandle): ViewModel() {
+
+    @OptIn(SavedStateHandleSaveableApi::class)
+    var nameFieldValue by savedStateHandle.saveable(stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(TextFieldValue(""))
+    }
+        private set
+
+    @OptIn(SavedStateHandleSaveableApi::class)
+    var broadCastFieldValue by savedStateHandle.saveable(stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(TextFieldValue(""))
+    }
+        private set
+
+    @OptIn(SavedStateHandleSaveableApi::class)
+    var typeFieldValue by savedStateHandle.saveable(stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(TextFieldValue(""))
+    }
+        private set
+
+    fun onUdateStateName(newNameFieldValue: TextFieldValue) {
+        nameFieldValue = newNameFieldValue
+    }
+
+    fun onUdateStateBroadCast(newBroadCastFieldValue: TextFieldValue) {
+        nameFieldValue = newBroadCastFieldValue
+    }
+
+    fun onUdateStateType(newTypeFieldValue: TextFieldValue) {
+        nameFieldValue = newTypeFieldValue
+    }
 
 
-    val rates: MutableStateFlow<Rates> = MutableStateFlow(
-        Rates(
+    val rates:Rates = Rates(
+        MutableStateFlow(
             mutableListOf(
                 Rate(
                     "MTS RUS",
@@ -52,12 +84,8 @@ class RateViewModel @Inject constructor(
     @Inject
     lateinit var searcher: RateSearcher
 
-    @Inject
-    lateinit var printer: RatesPrinter
 
-    fun print(): String {
-        return printer.printRates(rates.asStateFlow())
-    }
+
 
     fun search(search: TypeSearch, name: String, index: Int, type: BroadCast, access: Boolean) {
         when (search) {
@@ -74,12 +102,10 @@ class RateViewModel @Inject constructor(
                 searcher.searchRateBradCast(rates, type)
             }
 
-            TypeSearch.Index -> {
+            else -> {
 
-                searcher.searchRateIndex(rates, index)
             }
-        }  // println("Rate wasn't fund")
-
+        }
     }
 
     fun sort(sort: TypeEdit) {
@@ -101,9 +127,9 @@ class RateViewModel @Inject constructor(
     fun edit(
         index: Int,
         edit: TypeEdit,
-        newName: String,
-        newBroadCast: BroadCast,
-        newAccess: Boolean
+        newName: String = "",
+        newBroadCast: BroadCast = BroadCast.HD,
+        newAccess: Boolean = true
     ) {
         when (edit) {
             TypeEdit.BroadCast -> {

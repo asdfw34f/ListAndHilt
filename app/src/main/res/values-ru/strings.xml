@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ListAndHilt</string>
+    <string name="show_menu">Показать меню</string>
+    <string name="broadcast_type">Тип вещания: %1$s</string>
+    <string name="edit">Редактировать</string>
+    <string name="delete">Удалить</string>
+    <string name="settings">Настройки</string>
+    <string name="universal_access">Всеобщий доступ: %1$s</string>
+    <string name="no">Нет</string>
+    <string name="yes">Да</string>
+    <string name="add">Добавить</string>
+    <string name="name">Название</string>
+</resources>
